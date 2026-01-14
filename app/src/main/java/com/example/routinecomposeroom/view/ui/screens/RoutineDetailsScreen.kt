@@ -41,6 +41,7 @@ fun RoutineDetailScreen(
     var newTaskName by remember { mutableStateOf("") }
     var newTaskDescription by remember { mutableStateOf("") }
     var newTaskTime by remember { mutableStateOf("") }
+    var visibleButtonFlag by remember { mutableStateOf(true) }
 
     Scaffold(
         topBar = {
@@ -120,22 +121,13 @@ fun RoutineDetailScreen(
                             .height(56.dp),
                         colors = ButtonDefaults.buttonColors(
                             containerColor = MaterialTheme.colorScheme.primary
-                        )
-                    ) {
-                        Icon(Icons.Default.Check, contentDescription = null)
-                        Spacer(modifier = Modifier.width(8.dp))
-                        Text("Finalizar Rutina por Hoy")
-                    }
-                } else {
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .background(Color(0xFF4CAF50), shape = MaterialTheme.shapes.medium)
-                            .padding(16.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text("¡Hábito Completado!", color = Color.White, fontWeight = FontWeight.Bold)
-                    }
+                        ),
+
+                        ) {
+                            Icon(Icons.Default.Check, contentDescription = null)
+                            Spacer(modifier = Modifier.width(8.dp))
+                            Text("Finalizar Rutina por Hoy")
+                        }
                 }
             }
         }
