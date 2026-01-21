@@ -37,7 +37,7 @@ fun RoutineEntity.calculateNextExecution(): LocalDateTime? {
 
 
 fun RoutineEntity.getStatusMessage(): String {
-    if (this.isConcluded) return "✅ ¡Meta alcanzada!"
+    if (this.isConcluded) return " ¡Meta alcanzada!"
 
 
     val nextRun = this.calculateNextExecution() ?: return "Sin fecha pendiente"

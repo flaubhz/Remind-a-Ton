@@ -61,6 +61,9 @@ fun RoutineDetailScreen(
             }
         } else {
             val currentRoutine = routine!!
+            var showFinishButton by remember(currentRoutine.canBeCompletedToday) {
+                mutableStateOf(currentRoutine.canBeCompletedToday)
+            }
 
             Column(
                 modifier = Modifier
@@ -105,9 +108,22 @@ fun RoutineDetailScreen(
                         TaskItemReadOnly(task = task)                    }
                 }
 
-                if (!currentRoutine.isConcluded) {
+                if (currentRoutine.isConcluded) {
+                    // Si el hábito está totalmente completado, mostramos el mensaje final.
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .background(Color(0xFF4CAF50), shape = MaterialTheme.shapes.medium)
+                            .padding(16.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("¡Hábito Completado!", color = Color.White, fontWeight = FontWeight.Bold)
+                    }
+                } else if (showFinishButton) {
+
                     Button(
-                        onClick = { viewModel.onFinishRoutineClicked() },
+
+                        onClick = { showConfirmDialog = true },
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(56.dp),
@@ -120,16 +136,41 @@ fun RoutineDetailScreen(
                         Text("Finalizar Rutina por Hoy")
                     }
                 } else {
+
                     Box(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .background(Color(0xFF4CAF50), shape = MaterialTheme.shapes.medium)
+                            .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium)
                             .padding(16.dp),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("¡Hábito Completado!", color = Color.White, fontWeight = FontWeight.Bold)
+                        Text("¡Ya has completado la rutina de hoy!", color = MaterialTheme.colorScheme.onSurfaceVariant)
                     }
                 }
+                if (showConfirmDialog) {
+                    AlertDialog(
+                        onDismissRequest = { showConfirmDialog = false },
+                        title = { Text("Confirmar Finalización") },
+                        text = { Text("¿Estás seguro de que quieres marcar la rutina como completada por hoy?") },
+                        confirmButton = {
+                            TextButton(
+                                onClick = {
+                                    viewModel.onFinishRoutineClicked()
+                                    showFinishButton = false
+                                    showConfirmDialog = false
+                                }
+                            ) {
+                                Text("Confirmar")
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(onClick = { showConfirmDialog = false }) {
+                                Text("Cancelar")
+                            }
+                        }
+                    )
+                }
+
             }
         }
     }
