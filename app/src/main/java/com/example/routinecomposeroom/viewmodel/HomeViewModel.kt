@@ -10,6 +10,7 @@ import com.example.routinecomposeroom.data.entities.RoutineEntity
 import com.example.routinecomposeroom.data.utils.calculateNextExecution
 import com.example.routinecomposeroom.repository.RoutineRepository
 import com.example.routinecomposeroom.workers.RoutineWorker
+import com.example.routinecomposeroom.data.utils.isConcluded
 import dagger.hilt.android.lifecycle.HiltViewModel
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.SharingStarted
@@ -28,20 +29,6 @@ class HomeViewModel @Inject constructor(
     @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    val upcomingRoutines: StateFlow<List<RoutineEntity>> = repository.allRoutines
-        .map { list ->
-            list.sortedBy { routine ->
-
-                routine.calculateNextExecution() ?: LocalDateTime.MAX
-            }.take(6)
-        }
-        .stateIn(
-            scope = viewModelScope,
-            started = SharingStarted.WhileSubscribed(5000),
-            initialValue = emptyList()
-        )
-
-
     val allRoutines: StateFlow<List<RoutineEntity>> = repository.allRoutines
         .stateIn(
             scope = viewModelScope,
@@ -49,36 +36,40 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-
-
-
+    val upcomingRoutines: StateFlow<List<RoutineEntity>> = allRoutines
+        .map { list ->
+            list
+                .filter { !it.isConcluded }
+                .sortedBy { routine ->
+                    routine.calculateNextExecution() ?: LocalDateTime.MAX
+                }
+                .take(6)
+        }
+        .stateIn(
+            scope = viewModelScope,
+            started = SharingStarted.WhileSubscribed(5000),
+            initialValue = emptyList()
+        )
 
     fun addRoutine(routine: RoutineEntity) {
         viewModelScope.launch {
-
             val newRoutineId = repository.insertRoutine(routine)
-
-
             scheduleFirstNotification(routine, newRoutineId.toInt())
         }
     }
 
     private fun scheduleFirstNotification(routine: RoutineEntity, routineId: Int) {
-
         val firstExecution = routine.calculateNextExecution()
-
         if (firstExecution != null) {
             val now = LocalDateTime.now()
             val delay = Duration.between(now, firstExecution).toMillis()
 
             if (delay > 0) {
-
                 val workRequest = OneTimeWorkRequestBuilder<RoutineWorker>()
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                     .setInputData(workDataOf("ROUTINE_ID" to routineId))
                     .addTag("routine_$routineId")
                     .build()
-
 
                 WorkManager.getInstance(context).enqueue(workRequest)
             }
@@ -87,11 +78,9 @@ class HomeViewModel @Inject constructor(
 
     fun deleteRoutine(routine: RoutineEntity) {
         viewModelScope.launch {
-
             WorkManager.getInstance(context).cancelAllWorkByTag("routine_${routine.id}")
-
-
             repository.deleteRoutine(routine)
         }
     }
 }
+
