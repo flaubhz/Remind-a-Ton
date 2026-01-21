@@ -24,7 +24,7 @@ class RoutineDetailsViewModel @Inject constructor(
     // --- ESTADOS INTERNOS ---
     private var routineId: Int = 0
 
-    // Usaremos MutableStateFlow para poder emitir los datos de la rutina cargada
+
     private val _routine = MutableStateFlow<RoutineEntity?>(null)
     val routine: StateFlow<RoutineEntity?> = _routine.asStateFlow()
 
@@ -32,16 +32,15 @@ class RoutineDetailsViewModel @Inject constructor(
     val tasks: StateFlow<List<TaskEntity>> = _tasks.asStateFlow()
 
     init {
-        // Intenta cargar el ID desde la navegación principal (útil si se abre la pantalla completa)
+
         savedStateHandle.get<Int>("routineId")?.let { id ->
-            if (id != 0) { // Si el ID es válido
+            if (id != 0) {
                 loadRoutine(id)
             }
         }
     }
 
-    // --- FUNCIÓN DE CARGA ---
-    // Esta función se llamará desde el diálogo de edición para cargar los datos
+
     fun loadRoutine(id: Int) {
         // Evita recargar si ya tenemos los datos para el mismo ID
         if (id == this.routineId && _routine.value != null) return
@@ -61,7 +60,7 @@ class RoutineDetailsViewModel @Inject constructor(
         }
     }
 
-    // --- ACCIONES DEL USUARIO ---
+
 
 
 
@@ -69,8 +68,8 @@ class RoutineDetailsViewModel @Inject constructor(
         if (name.isBlank()) return
         val newTask = TaskEntity(
             name = name,
-            description = description, // Usamos la descripción del formulario
-            time = time,             // Usamos el tiempo del formulario
+            description = description,
+            time = time,
             routineId = this.routineId
         )
         viewModelScope.launch {
@@ -108,9 +107,9 @@ class RoutineDetailsViewModel @Inject constructor(
         }
     }
 
-    // --- AÑADIR ESTA FUNCIÓN PARA ACTUALIZAR UNA TAREA ---
+
     fun updateTask(task: TaskEntity, newName: String, newDescription: String, newTime: Int) {
-        // Creamos una copia de la tarea con los datos nuevos
+
         val updatedTask = task.copy(
             name = newName,
             description = newDescription,
@@ -122,19 +121,18 @@ class RoutineDetailsViewModel @Inject constructor(
     }
 
 
-    // En RoutineDetailsViewModel.kt
 
-    // --> REEMPLAZA ESTA FUNCIÓN COMPLETA <--
+
     fun onFinishRoutineClicked() {
         viewModelScope.launch {
             val currentRoutine = routine.value ?: return@launch
             val today = LocalDate.now()
 
-            // Comprueba si la rutina se puede completar hoy
+
             if (!currentRoutine.isConcluded && currentRoutine.canBeCompletedToday) {
                 val updatedRoutine = currentRoutine.copy(
                     timesDone = currentRoutine.timesDone + 1,
-                    lastCompletedDate = today // Guarda la fecha de hoy
+                    lastCompletedDate = today
                 )
                 repository.updateRoutine(updatedRoutine)
             }

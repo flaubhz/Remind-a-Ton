@@ -25,17 +25,13 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val repository: RoutineRepository,
-    @ApplicationContext private val context: Context // Necesario para WorkManager (aunque Hilt puede inyectar WorkManager directamente si lo configuras, usaremos context aquí por simplicidad)
+    @ApplicationContext private val context: Context
 ) : ViewModel() {
 
-    // --- LECTURA DE DATOS ---
-
-    // Obtenemos todas las rutinas y filtramos las 3 más urgentes
     val upcomingRoutines: StateFlow<List<RoutineEntity>> = repository.allRoutines
         .map { list ->
             list.sortedBy { routine ->
-                // Usamos la función de extensión limpia que creamos en RoutineCalc.kt
-                // Si devuelve null (rutina acabada), la mandamos al final de la lista
+
                 routine.calculateNextExecution() ?: LocalDateTime.MAX
             }.take(6)
         }
@@ -45,7 +41,7 @@ class HomeViewModel @Inject constructor(
             initialValue = emptyList()
         )
 
-    // --- NUEVO: Exponemos TODAS las rutinas para la pantalla AllRoutinesScreen ---
+
     val allRoutines: StateFlow<List<RoutineEntity>> = repository.allRoutines
         .stateIn(
             scope = viewModelScope,
@@ -55,20 +51,20 @@ class HomeViewModel @Inject constructor(
 
 
 
-    // --- ACCIONES DEL USUARIO ---
+
 
     fun addRoutine(routine: RoutineEntity) {
         viewModelScope.launch {
-            // 1. Guardar en la Base de Datos y obtener el nuevo ID
+
             val newRoutineId = repository.insertRoutine(routine)
 
-            // 2. Programar la PRIMERA notificación
+
             scheduleFirstNotification(routine, newRoutineId.toInt())
         }
     }
 
     private fun scheduleFirstNotification(routine: RoutineEntity, routineId: Int) {
-        // Calculamos cuándo debe sonar por primera vez
+
         val firstExecution = routine.calculateNextExecution()
 
         if (firstExecution != null) {
@@ -76,14 +72,14 @@ class HomeViewModel @Inject constructor(
             val delay = Duration.between(now, firstExecution).toMillis()
 
             if (delay > 0) {
-                // Creamos el trabajo para el Worker
+
                 val workRequest = OneTimeWorkRequestBuilder<RoutineWorker>()
                     .setInitialDelay(delay, TimeUnit.MILLISECONDS)
                     .setInputData(workDataOf("ROUTINE_ID" to routineId))
-                    .addTag("routine_$routineId") // Etiqueta útil para cancelar si borras la rutina
+                    .addTag("routine_$routineId")
                     .build()
 
-                // Encolamos el trabajo
+
                 WorkManager.getInstance(context).enqueue(workRequest)
             }
         }
@@ -91,10 +87,10 @@ class HomeViewModel @Inject constructor(
 
     fun deleteRoutine(routine: RoutineEntity) {
         viewModelScope.launch {
-            // 1. Cancelar las notificaciones pendientes
+
             WorkManager.getInstance(context).cancelAllWorkByTag("routine_${routine.id}")
 
-            // 2. Borrar de la BBDD
+
             repository.deleteRoutine(routine)
         }
     }

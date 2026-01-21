@@ -6,13 +6,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -35,7 +32,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // Pedir permisos de notificación en Android 13+
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
         }
@@ -57,12 +54,12 @@ class MainActivity : ComponentActivity() {
                         }
                     }
 
-                    // Configuración de Navegación
+
                     NavHost(
                         navController = navController,
                         startDestination = "home"
                     ) {
-                        // 1. PANTALLA DE INICIO
+
                         composable("home") {
                             HomeScreen(
                                 onNavigateToAllRoutines = { navController.navigate("all_routines") },
@@ -72,8 +69,8 @@ class MainActivity : ComponentActivity() {
                                 },
                             )
                         }
-                        // 2. PANTALLA DE TODAS LAS RUTINAS
-                        composable(route = "all_routines") { // --> CORRECCIÓN: Usar 'route =' para asegurar el registro correcto.
+
+                        composable(route = "all_routines") {
                             RoutinesScreen(
                                 onNavigateToHome = {
                                     navController.navigate("home") {
@@ -84,7 +81,7 @@ class MainActivity : ComponentActivity() {
                             )
                         }
 
-                        // 3. PANTALLA DE OPCIONES
+
                         composable("options") {
                             com.example.routinecomposeroom.view.ui.screens.OptionsScreen(
                                 onNavigateToHome = {
@@ -96,12 +93,12 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("privacy_policy") {
-                            // Asegúrate de importar PolicyScreen
+
                             com.example.routinecomposeroom.view.ui.screens.PolicyScreen(
                                 onNavigateBack = { navController.popBackStack() }
                             )
                         }
-                        // 4. PANTALLA DE DETALLE
+
                         composable(
                             route = "routine_detail/{routineId}",
                             arguments = listOf(navArgument("routineId") { type = NavType.IntType })

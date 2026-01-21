@@ -53,13 +53,6 @@ fun RoutineDetailScreen(
                 }
             )
         },
-        floatingActionButton = {
-            if (routine?.isConcluded == false) {
-                FloatingActionButton(onClick = { showDialog = true }) {
-                    Icon(Icons.Default.Add, contentDescription = "Añadir Tarea")
-                }
-            }
-        }
     ) { paddingValues ->
 
         if (routine == null) {
@@ -141,59 +134,10 @@ fun RoutineDetailScreen(
         }
     }
 
-    if (showDialog) {
-        AlertDialog(
-            onDismissRequest = { showDialog = false },
-            title = { Text("Nueva Tarea") },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedTextField(
-                        value = newTaskName,
-                        onValueChange = { newTaskName = it },
-                        label = { Text("Nombre de la tarea") }
-                    )
-                    OutlinedTextField(
-                        value = newTaskDescription,
-                        onValueChange = { newTaskDescription = it },
-                        label = { Text("Descripción (opcional)") }
-                    )
-                    OutlinedTextField(
-                        value = newTaskTime,
-                        onValueChange = { if (it.all(Char::isDigit)) newTaskTime = it },
-                        label = { Text("Duración (minutos)") },
-                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
-                    )
-                }
-            },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        viewModel.addTask(
-                            name = newTaskName,
-                            description = newTaskDescription,
-                            time = newTaskTime.toIntOrNull() ?: 0
-                        )
-                        newTaskName = ""
-                        newTaskDescription = ""
-                        newTaskTime = ""
-                        showDialog = false
-                    },
-                    enabled = newTaskName.isNotBlank()
-                ) {
-                    Text("Añadir")
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Cancelar")
-                }
-            }
-        )
-    }
 }
 
 
-// --> NUEVO COMPONENTE: Una tarjeta de tarea de solo lectura <--
+
 @Composable
 fun TaskItemReadOnly(task: TaskEntity) {
     Card(

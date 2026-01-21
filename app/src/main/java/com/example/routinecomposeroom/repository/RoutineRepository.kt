@@ -12,17 +12,16 @@ class RoutineRepository @Inject constructor(
     private val taskDao: TaskDao
 ) {
 
-    // --- SECCIÓN RUTINAS ---
+
 
     val allRoutines: Flow<List<RoutineEntity>> = routineDao.selectRoutines()
 
-    // 1. NUEVO: Función para obtener una rutina individual (Necesaria para WorkManager)
+
     fun getRoutineById(id: Int): Flow<RoutineEntity?> {
         return routineDao.getRoutineById(id)
     }
 
-    // 2. MODIFICADO: Devuelve Long (el ID generado)
-    // Esto es vital para que al crear una rutina, sepamos qué ID pasarle a la primera notificación
+
     suspend fun insertRoutine(routine: RoutineEntity): Long {
         return routineDao.insertRoutine(routine)
     }
@@ -35,7 +34,7 @@ class RoutineRepository @Inject constructor(
         routineDao.deleteRoutine(routine)
     }
 
-    // --- SECCIÓN TAREAS ---
+
 
     fun getTasksForRoutine(routineId: Int): Flow<List<TaskEntity>> {
 
