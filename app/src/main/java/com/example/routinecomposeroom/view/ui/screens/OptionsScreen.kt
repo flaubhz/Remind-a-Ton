@@ -43,6 +43,7 @@ fun OptionsScreen(
 
     onNavigateToHome: () -> Unit,
     onNavigateToAllRoutines: () -> Unit,
+    onNavigateToConfig: () -> Unit,
     onNavigateToPrivacy: () -> Unit
 ) {
     Scaffold(
@@ -94,22 +95,22 @@ fun OptionsScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            // Tarjeta contenedora para agrupar opciones
+
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column {
-                    // Opción 1: Configuración
+
                     OptionItem(
                         text = "Configuración",
                         icon = Icons.Default.Settings,
-                        onClick = { /* TODO: Navegar a pantalla de configuración detallada */ }
+                        onClick =  onNavigateToConfig
                     )
 
                     HorizontalDivider()
 
-                    // Política de Privacidad
+
                     OptionItem(
                         text = "Política de privacidad",
                         icon = Icons.Default.Lock,

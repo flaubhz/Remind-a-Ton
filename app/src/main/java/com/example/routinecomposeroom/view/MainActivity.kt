@@ -20,6 +20,7 @@ import com.example.routinecomposeroom.view.theme.RoutineComposeRoomTheme
 import com.example.routinecomposeroom.view.ui.screens.HomeScreen
 import com.example.routinecomposeroom.view.ui.screens.RoutineDetailScreen
 import com.example.routinecomposeroom.view.ui.screens.RoutinesScreen
+import com.example.routinecomposeroom.view.ui.screens.ConfigScreen
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -88,6 +89,7 @@ class MainActivity : ComponentActivity() {
                                     navController.navigate("home") { popUpTo("home") { inclusive = true } }
                                 },
                                 onNavigateToAllRoutines = { navController.navigate("all_routines") },
+                                onNavigateToConfig = { navController.navigate("config") },
                                 onNavigateToPrivacy = { navController.navigate("privacy_policy") }
                             )
                         }
@@ -96,6 +98,11 @@ class MainActivity : ComponentActivity() {
 
                             com.example.routinecomposeroom.view.ui.screens.PolicyScreen(
                                 onNavigateBack = { navController.popBackStack() }
+                            )
+                        }
+
+                        composable("config") {
+                            ConfigScreen(onNavigateBack = { navController.popBackStack() }
                             )
                         }
 
