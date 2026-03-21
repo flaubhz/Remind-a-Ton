@@ -9,11 +9,21 @@ import com.example.routinecomposeroom.data.entities.TaskEntity
 import com.example.routinecomposeroom.data.utils.isConcluded
 import com.example.routinecomposeroom.repository.RoutineRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import javax.inject.Inject
+
+data class RoutineDetailsState(
+    val routine: RoutineEntity? = null,
+    val tasks: List<TaskEntity> = emptyList(),
+    val isLoading: Boolean = true
+)
 
 @HiltViewModel
 class RoutineDetailsViewModel @Inject constructor(
@@ -21,57 +31,58 @@ class RoutineDetailsViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
-    // --- ESTADOS INTERNOS ---
-    private var routineId: Int = 0
+    private val _uiState = MutableStateFlow(RoutineDetailsState())
+    val uiState: StateFlow<RoutineDetailsState> = _uiState.asStateFlow()
 
-
-    private val _routine = MutableStateFlow<RoutineEntity?>(null)
-    val routine: StateFlow<RoutineEntity?> = _routine.asStateFlow()
-
-    private val _tasks = MutableStateFlow<List<TaskEntity>>(emptyList())
-    val tasks: StateFlow<List<TaskEntity>> = _tasks.asStateFlow()
 
     init {
 
-        savedStateHandle.get<Int>("routineId")?.let { id ->
-            if (id != 0) {
-                loadRoutine(id)
-            }
+        val routineId: Int? = savedStateHandle.get<Int>("routineId")
+        if (routineId != null && routineId != 0) {
+
+            loadRoutineAndTasks(routineId)
+        } else {
+
+            _uiState.update { it.copy(isLoading = false) }
         }
     }
 
 
-    fun loadRoutine(id: Int) {
-        // Evita recargar si ya tenemos los datos para el mismo ID
-        if (id == this.routineId && _routine.value != null) return
+    fun loadRoutineAndTasks(id: Int) {
 
-        this.routineId = id
+        if (savedStateHandle.get<Int>("routineId") == id && !_uiState.value.isLoading) return
 
-        viewModelScope.launch {
-            repository.getRoutineById(id).collect { routineData ->
-                _routine.value = routineData
-            }
-        }
+        savedStateHandle["routineId"] = id
+        _uiState.update { it.copy(isLoading = true) }
 
         viewModelScope.launch {
-            repository.getTasksForRoutine(id).collect { tasksData ->
-                _tasks.value = tasksData
-            }
+            repository.getRoutineById(id)
+                .combine(repository.getTasksForRoutine(id)) { routineData, tasksData ->
+                    RoutineDetailsState(
+                        routine = routineData,
+                        tasks = tasksData,
+                        isLoading = false
+                    )
+                }
+                .collect { combinedState ->
+                    _uiState.value = combinedState
+                }
         }
     }
-
-
-
 
 
     fun addTask(name: String, description: String, time: Int) {
         if (name.isBlank()) return
+
+        val routineId = savedStateHandle.get<Int>("routineId") ?: return
+
         val newTask = TaskEntity(
             name = name,
             description = description,
             time = time,
-            routineId = this.routineId
+            routineId = routineId
         )
+
         viewModelScope.launch {
             repository.insertTask(newTask)
         }
@@ -91,7 +102,7 @@ class RoutineDetailsViewModel @Inject constructor(
         newFrequency: Frequency,
         newTotalTimes: Int
     ) {
-        val currentRoutine = _routine.value ?: return
+        val currentRoutine = _uiState.value.routine ?: return
 
         val updatedRoutine = currentRoutine.copy(
             name = newName,
@@ -107,27 +118,22 @@ class RoutineDetailsViewModel @Inject constructor(
         }
     }
 
-
     fun updateTask(task: TaskEntity, newName: String, newDescription: String, newTime: Int) {
-
         val updatedTask = task.copy(
             name = newName,
             description = newDescription,
             time = newTime
         )
+
         viewModelScope.launch {
             repository.updateTask(updatedTask)
         }
     }
 
-
-
-
     fun onFinishRoutineClicked() {
         viewModelScope.launch {
-            val currentRoutine = routine.value ?: return@launch
+            val currentRoutine = _uiState.value.routine ?: return@launch
             val today = LocalDate.now()
-
 
             if (!currentRoutine.isConcluded && currentRoutine.canBeCompletedToday) {
                 val updatedRoutine = currentRoutine.copy(
@@ -138,8 +144,9 @@ class RoutineDetailsViewModel @Inject constructor(
             }
         }
     }
-
 }
+
+
 
 
 

@@ -6,10 +6,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -17,18 +17,19 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.routinecomposeroom.view.theme.RoutineComposeRoomTheme
-import com.example.routinecomposeroom.view.ui.screens.HomeScreen
-import com.example.routinecomposeroom.view.ui.screens.RoutineDetailScreen
-import com.example.routinecomposeroom.view.ui.screens.RoutinesScreen
-import com.example.routinecomposeroom.view.ui.screens.ConfigScreen
+import com.example.routinecomposeroom.view.ui.screens.*
+import com.example.routinecomposeroom.viewmodel.ThemeMode
+import com.example.routinecomposeroom.viewmodel.ThemeViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
+    private val themeViewModel: ThemeViewModel by viewModels()
+
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
-    ) { isGranted: Boolean -> }
+    ) { }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,28 +40,25 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            RoutineComposeRoomTheme {
+
+            val currentTheme = themeViewModel.themeState.value
+
+            val useDarkTheme = when (currentTheme) {
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+
+            RoutineComposeRoomTheme(darkTheme = useDarkTheme) {
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
                     val navController = rememberNavController()
 
-                    // Gestionar apertura desde notificación
-                    val routineIdFromNotification = intent.getIntExtra("ROUTINE_ID_EXTRA", -1)
-
-                    LaunchedEffect(routineIdFromNotification) {
-                        if (routineIdFromNotification != -1) {
-                            navController.navigate("routine_detail/$routineIdFromNotification")
-                        }
-                    }
-
-
                     NavHost(
                         navController = navController,
                         startDestination = "home"
                     ) {
-
                         composable("home") {
                             HomeScreen(
                                 onNavigateToAllRoutines = { navController.navigate("all_routines") },
@@ -74,17 +72,14 @@ class MainActivity : ComponentActivity() {
                         composable(route = "all_routines") {
                             RoutinesScreen(
                                 onNavigateToHome = {
-                                    navController.navigate("home") {
-                                        popUpTo("home") { inclusive = true }
-                                    }
+                                    navController.navigate("home") { popUpTo("home") { inclusive = true } }
                                 },
                                 onNavigateToOptions = { navController.navigate("options") },
                             )
                         }
 
-
                         composable("options") {
-                            com.example.routinecomposeroom.view.ui.screens.OptionsScreen(
+                            OptionsScreen(
                                 onNavigateToHome = {
                                     navController.navigate("home") { popUpTo("home") { inclusive = true } }
                                 },
@@ -95,15 +90,11 @@ class MainActivity : ComponentActivity() {
                         }
 
                         composable("privacy_policy") {
-
-                            com.example.routinecomposeroom.view.ui.screens.PolicyScreen(
-                                onNavigateBack = { navController.popBackStack() }
-                            )
+                            PolicyScreen(onNavigateBack = { navController.popBackStack() })
                         }
 
                         composable("config") {
-                            ConfigScreen(onNavigateBack = { navController.popBackStack() }
-                            )
+                            ConfigScreen(onNavigateBack = { navController.popBackStack() })
                         }
 
                         composable(
@@ -111,7 +102,8 @@ class MainActivity : ComponentActivity() {
                             arguments = listOf(navArgument("routineId") { type = NavType.IntType })
                         ) {
                             RoutineDetailScreen(
-                                onNavigateBack = { navController.popBackStack() }
+                                onNavigateBack = { navController.popBackStack() },
+                                isReadOnly = true
                             )
                         }
                     }
@@ -120,4 +112,5 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
+
 

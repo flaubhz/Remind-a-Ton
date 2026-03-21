@@ -40,15 +40,11 @@ fun PolicyScreen(
                         Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
                     }
                 },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
-                ),
                 modifier = Modifier.shadow(4.dp)
             )
         }
     ) { paddingValues ->
-        // La columna principal con scroll para diseño responsivo
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -58,7 +54,7 @@ fun PolicyScreen(
             verticalArrangement = Arrangement.spacedBy(28.dp)
         ) {
 
-            // Sección 1: Aviso de Privacidad
+
             PolicySection(
                 title = "Aviso de Privacidad",
                 body = "La aplicación Remind-A-Ton se despliega en su dispositivo de manera que el control de sus rutinas no será compartido con ningún tercero."
@@ -66,7 +62,7 @@ fun PolicyScreen(
 
             HorizontalDivider()
 
-            // Sección 2: Uso Responsable
+
             PolicySection(
                 title = "Uso Responsable",
                 body = "Apelamos a un uso responsable de la aplicación por parte del usuario. En caso de un uso irresponsable o modificación que altere el correcto funcionamiento de la app, no será posible el soporte ni la recuperación de datos."
@@ -74,7 +70,7 @@ fun PolicyScreen(
 
             HorizontalDivider()
 
-            // Sección 3: Contacto
+
             PolicySection(
                 title = "Contacto y Soporte",
                 body = "En caso de errores experimentados con la aplicación por favor consulte al siguiente correo: soporteRemind@ton.com"
@@ -83,7 +79,7 @@ fun PolicyScreen(
     }
 }
 
-//Componente reutliizable para los 3 espacios de las secciones
+
 @Composable
 fun PolicySection(
     title: String,

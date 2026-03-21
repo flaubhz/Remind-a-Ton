@@ -34,8 +34,12 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.example.routinecomposeroom.R
+import com.example.routinecomposeroom.view.ui.components.BottomBar
+import com.example.routinecomposeroom.view.ui.components.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -48,37 +52,13 @@ fun OptionsScreen(
 ) {
     Scaffold(
         topBar = {
-            CenterAlignedTopAppBar(
-                title = { Text("Opciones", fontWeight = FontWeight.Bold) },
-                colors = TopAppBarDefaults.centerAlignedTopAppBarColors(
-                    containerColor = Color.White,
-                    titleContentColor = Color.Black
-                ),
-                modifier = Modifier.shadow(4.dp)
-            )
+            TopBar()
         },
         bottomBar = {
-            NavigationBar {
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Inicio") },
-                    label = { Text("Inicio") },
-                    selected = false,
-                    onClick = onNavigateToHome
-                )
-                NavigationBarItem(
-                    icon = { Icon(Icons.AutoMirrored.Filled.List, contentDescription = "Rutinas") },
-                    label = { Text("Rutinas") },
-                    selected = false,
-                    onClick = onNavigateToAllRoutines
-                )
-
-                NavigationBarItem(
-                    icon = { Icon(Icons.Default.Settings, contentDescription = "Opciones") },
-                    label = { Text("Opciones") },
-                    selected = true,
-                    onClick = {  }
-                )
-            }
+            BottomBar(  onNavigateToHome=onNavigateToHome,
+                        onNavigateToAllRoutines = onNavigateToAllRoutines,
+                        onNavigateToOptions = {},
+                "Options")
         }
     ) { paddingValues ->
         Column(

@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">RoutineComposeRoom</string>
+    <string name="inicio">Inicio</string>
+    <string name="opciones">Opciones</string>
+    <string name="remind_a_ton">Remind-a-Ton</string>
+    <string name="rutinas">Rutinas</string>
 </resources>
