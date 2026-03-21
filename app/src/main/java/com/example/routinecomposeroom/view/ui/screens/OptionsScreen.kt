@@ -4,47 +4,26 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.KeyboardArrowRight
-import androidx.compose.material.icons.automirrored.filled.List
-import androidx.compose.material.icons.filled.Edit
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Lock
-import androidx.compose.material.icons.filled.Settings
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.shadow
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.example.routinecomposeroom.R
 import com.example.routinecomposeroom.view.ui.components.BottomBar
 import com.example.routinecomposeroom.view.ui.components.TopBar
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OptionsScreen(
-
     onNavigateToHome: () -> Unit,
     onNavigateToAllRoutines: () -> Unit,
     onNavigateToConfig: () -> Unit,
@@ -55,9 +34,10 @@ fun OptionsScreen(
             TopBar()
         },
         bottomBar = {
+
             BottomBar(  onNavigateToHome=onNavigateToHome,
-                        onNavigateToAllRoutines = onNavigateToAllRoutines,
-                        onNavigateToOptions = {},
+                onNavigateToAllRoutines = onNavigateToAllRoutines,
+                onNavigateToOptions = {},
                 "Options")
         }
     ) { paddingValues ->
@@ -75,25 +55,21 @@ fun OptionsScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-
             Card(
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 elevation = CardDefaults.cardElevation(2.dp)
             ) {
                 Column {
-
+                    // Quitamos el parámetro 'icon' de las llamadas
                     OptionItem(
                         text = "Configuración",
-                        icon = Icons.Default.Settings,
-                        onClick =  onNavigateToConfig
+                        onClick = onNavigateToConfig
                     )
 
                     HorizontalDivider()
 
-
                     OptionItem(
                         text = "Política de privacidad",
-                        icon = Icons.Default.Lock,
                         onClick = onNavigateToPrivacy
                     )
                 }
@@ -105,7 +81,6 @@ fun OptionsScreen(
 @Composable
 fun OptionItem(
     text: String,
-    icon: ImageVector,
     onClick: () -> Unit
 ) {
     Row(
@@ -113,23 +88,19 @@ fun OptionItem(
             .fillMaxWidth()
             .clickable { onClick() }
             .padding(16.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
     ) {
-        Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant
-        )
-        Spacer(modifier = Modifier.width(16.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyLarge,
             modifier = Modifier.weight(1f)
         )
-        Icon(
-            imageVector = Icons.AutoMirrored.Filled.KeyboardArrowRight,
-            contentDescription = "Ir",
-            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
+
+        Text(
+            text = ">",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f)
         )
     }
 }

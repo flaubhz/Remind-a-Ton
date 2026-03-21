@@ -3,8 +3,6 @@ package com.example.routinecomposeroom.view.ui.screens
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -14,7 +12,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.routinecomposeroom.viewmodel.AddRoutineViewModel
 import com.example.routinecomposeroom.viewmodel.HomeViewModel
 import com.example.routinecomposeroom.view.ui.components.routinesScreen.DateSelector
@@ -35,13 +33,11 @@ fun AddRoutineScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Configuración", fontWeight = FontWeight.Bold) },
+                title = { Text("Nueva Rutina", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                    // Sustituimos el IconButton con Icon por un TextButton simple
+                    TextButton(onClick = onNavigateBack) {
+                        Text("Volver")
                     }
                 }
             )
@@ -113,4 +109,3 @@ fun AddRoutineScreen(
         }
     }
 }
-

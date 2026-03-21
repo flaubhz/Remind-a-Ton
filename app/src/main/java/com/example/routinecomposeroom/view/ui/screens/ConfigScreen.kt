@@ -1,14 +1,13 @@
 package com.example.routinecomposeroom.view.ui.screens
 
-import androidx.compose.foundation.layout.*import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.hilt.lifecycle.viewmodel.compose.hiltViewModel
+import androidx.hilt.navigation.compose.hiltViewModel
 import com.example.routinecomposeroom.viewmodel.ThemeMode
 import com.example.routinecomposeroom.viewmodel.ThemeViewModel
 
@@ -23,11 +22,9 @@ fun ConfigScreen(
             TopAppBar(
                 title = { Text("Configuración", fontWeight = FontWeight.Bold) },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Volver"
-                        )
+                    // Sustituimos el IconButton con Icon por un TextButton con la palabra "Volver"
+                    TextButton(onClick = onNavigateBack) {
+                        Text("Volver")
                     }
                 }
             )
@@ -47,8 +44,9 @@ fun ConfigScreen(
                 modifier = Modifier.padding(bottom = 8.dp)
             )
 
-            Card {
-                
+            Card(
+                modifier = Modifier.fillMaxWidth()
+            ) {
                 ThemeSwitch(
                     currentTheme = themeViewModel.themeState.value,
                     onThemeChange = { newTheme ->
@@ -60,13 +58,12 @@ fun ConfigScreen(
     }
 }
 
-
 @Composable
 fun ThemeSwitch(currentTheme: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
+            .padding(horizontal = 16.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.SpaceBetween
     ) {
@@ -88,4 +85,3 @@ fun ThemeSwitch(currentTheme: ThemeMode, onThemeChange: (ThemeMode) -> Unit) {
         )
     }
 }
-

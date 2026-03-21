@@ -4,9 +4,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.getValue
@@ -26,33 +23,35 @@ import com.example.routinecomposeroom.viewmodel.RoutineDetailsState
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun RoutineDetailScreen(
+    routineId: Int,
     viewModel: RoutineDetailsViewModel = hiltViewModel(),
     onNavigateBack: () -> Unit,
     isReadOnly: Boolean
 ) {
-
     val uiState by viewModel.uiState.collectAsState()
     var showConfirmDialog by remember { mutableStateOf(false) }
+
+    LaunchedEffect(routineId) {
+        viewModel.loadRoutineAndTasks(routineId)
+    }
 
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(uiState.routine?.name ?: "Cargando...") },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateBack) {
-                        Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Back")
+                    TextButton(onClick = onNavigateBack) {
+                        Text("Volver") // Sustituido icono por texto
                     }
                 }
             )
         }
     ) { paddingValues ->
-
         if (uiState.isLoading) {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 CircularProgressIndicator()
             }
         } else if (uiState.routine != null) {
-
             RoutineDetailContent(
                 modifier = Modifier.padding(paddingValues),
                 state = uiState,
@@ -65,7 +64,6 @@ fun RoutineDetailScreen(
                 }
             )
         } else {
-
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                 Text("Rutina no encontrada")
             }
@@ -82,7 +80,7 @@ private fun RoutineDetailContent(
     onFinishButtonClick: () -> Unit,
     onFinishRoutineConfirm: () -> Unit
 ) {
-    val currentRoutine = state.routine!! // We know it's not null here
+    val currentRoutine = state.routine!!
     var showFinishButton by remember(currentRoutine.canBeCompletedToday) {
         mutableStateOf(currentRoutine.canBeCompletedToday)
     }
@@ -92,7 +90,6 @@ private fun RoutineDetailContent(
             .fillMaxSize()
             .padding(16.dp)
     ) {
-
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             modifier = Modifier.fillMaxWidth()
@@ -104,7 +101,7 @@ private fun RoutineDetailContent(
                     fontWeight = FontWeight.Bold
                 )
                 Spacer(modifier = Modifier.height(8.dp))
-                Text("Progress: ${currentRoutine.timesDone} / ${currentRoutine.totalTimes}")
+                Text("Progreso: ${currentRoutine.timesDone} / ${currentRoutine.totalTimes}")
                 if (currentRoutine.description.isNotBlank()) {
                     Spacer(modifier = Modifier.height(8.dp))
                     Text(currentRoutine.description, style = MaterialTheme.typography.bodyMedium)
@@ -113,7 +110,6 @@ private fun RoutineDetailContent(
         }
 
         Spacer(modifier = Modifier.height(16.dp))
-
 
         Text("Tareas:", style = MaterialTheme.typography.titleMedium)
         LazyColumn(
@@ -142,8 +138,7 @@ private fun RoutineDetailContent(
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Icon(Icons.Default.Check, contentDescription = null)
-                Spacer(modifier = Modifier.width(8.dp))
+                // Icono eliminado
                 Text("Finalizar rutina por hoy")
             }
         } else {
@@ -159,18 +154,16 @@ private fun RoutineDetailContent(
         }
     }
 
-
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = onConfirmDialogDismiss,
             title = { Text("Confirmar Completado") },
-            text = { Text(
-                "¿Deseas terminar por hoy?") },
+            text = { Text("¿Deseas terminar por hoy?") },
             confirmButton = {
                 TextButton(
                     onClick = {
                         onFinishRoutineConfirm()
-                        showFinishButton = false // Hide the button immediately
+                        showFinishButton = false
                     }
                 ) {
                     Text("Confirmar")
