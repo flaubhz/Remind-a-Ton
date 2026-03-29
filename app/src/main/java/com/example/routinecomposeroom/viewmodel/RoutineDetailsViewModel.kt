@@ -34,22 +34,16 @@ class RoutineDetailsViewModel @Inject constructor(
     private val _uiState = MutableStateFlow(RoutineDetailsState())
     val uiState: StateFlow<RoutineDetailsState> = _uiState.asStateFlow()
 
-
     init {
-
         val routineId: Int? = savedStateHandle.get<Int>("routineId")
         if (routineId != null && routineId != 0) {
-
             loadRoutineAndTasks(routineId)
         } else {
-
             _uiState.update { it.copy(isLoading = false) }
         }
     }
 
-
     fun loadRoutineAndTasks(id: Int) {
-
         if (savedStateHandle.get<Int>("routineId") == id && !_uiState.value.isLoading) return
 
         savedStateHandle["routineId"] = id
@@ -70,19 +64,15 @@ class RoutineDetailsViewModel @Inject constructor(
         }
     }
 
-
     fun addTask(name: String, description: String, time: Int) {
         if (name.isBlank()) return
-
         val routineId = savedStateHandle.get<Int>("routineId") ?: return
-
         val newTask = TaskEntity(
             name = name,
             description = description,
             time = time,
             routineId = routineId
         )
-
         viewModelScope.launch {
             repository.insertTask(newTask)
         }
@@ -103,7 +93,6 @@ class RoutineDetailsViewModel @Inject constructor(
         newTotalTimes: Int
     ) {
         val currentRoutine = _uiState.value.routine ?: return
-
         val updatedRoutine = currentRoutine.copy(
             name = newName,
             description = newDescription,
@@ -112,7 +101,6 @@ class RoutineDetailsViewModel @Inject constructor(
             frequency = newFrequency,
             totalTimes = newTotalTimes
         )
-
         viewModelScope.launch {
             repository.updateRoutine(updatedRoutine)
         }
@@ -124,7 +112,6 @@ class RoutineDetailsViewModel @Inject constructor(
             description = newDescription,
             time = newTime
         )
-
         viewModelScope.launch {
             repository.updateTask(updatedTask)
         }
@@ -133,9 +120,22 @@ class RoutineDetailsViewModel @Inject constructor(
     fun onFinishRoutineClicked() {
         viewModelScope.launch {
             val currentRoutine = _uiState.value.routine ?: return@launch
+            val now = LocalTime.now()
             val today = LocalDate.now()
 
-            if (!currentRoutine.isConcluded && currentRoutine.canBeCompletedToday) {
+            // 1. Validar que la fecha actual sea igual o posterior a la fecha de inicio
+            val isDateReached = !today.isBefore(currentRoutine.startDate)
+
+            // 2. Validar que la hora actual sea igual o posterior a la hora programada
+            val isTimeReached = !now.isBefore(currentRoutine.startHour)
+
+            // Solo procedemos si: no está terminada globalmente, se puede completar hoy (no se hizo ya),
+            // y ya hemos llegado a la fecha y hora indicadas.
+            if (!currentRoutine.isConcluded &&
+                currentRoutine.canBeCompletedToday &&
+                isDateReached &&
+                isTimeReached
+            ) {
                 val updatedRoutine = currentRoutine.copy(
                     timesDone = currentRoutine.timesDone + 1,
                     lastCompletedDate = today
@@ -145,7 +145,6 @@ class RoutineDetailsViewModel @Inject constructor(
         }
     }
 }
-
 
 
 

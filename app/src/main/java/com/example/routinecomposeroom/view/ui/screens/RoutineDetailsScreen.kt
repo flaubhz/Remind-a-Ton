@@ -19,6 +19,8 @@ import com.example.routinecomposeroom.data.utils.getStatusMessage
 import com.example.routinecomposeroom.data.utils.isConcluded
 import com.example.routinecomposeroom.viewmodel.RoutineDetailsViewModel
 import com.example.routinecomposeroom.viewmodel.RoutineDetailsState
+import java.time.LocalDate
+import java.time.LocalTime
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -41,7 +43,7 @@ fun RoutineDetailScreen(
                 title = { Text(uiState.routine?.name ?: "Cargando...") },
                 navigationIcon = {
                     TextButton(onClick = onNavigateBack) {
-                        Text("Volver") // Sustituido icono por texto
+                        Text("Volver")
                     }
                 }
             )
@@ -81,15 +83,26 @@ private fun RoutineDetailContent(
     onFinishRoutineConfirm: () -> Unit
 ) {
     val currentRoutine = state.routine!!
-    var showFinishButton by remember(currentRoutine.canBeCompletedToday) {
-        mutableStateOf(currentRoutine.canBeCompletedToday)
-    }
+
+    // ---  Validación de tiempo para botón ---
+    val now = LocalTime.now()
+    val today = LocalDate.now()
+
+    // 1. Si se llega a la fecha de la rutina
+    val isDateReached = !today.isBefore(currentRoutine.startDate)
+
+    // 2. Si se llega a la hora de la rutina
+    val isTimeReached = !now.isBefore(currentRoutine.startHour)
+
+    // El botón solo se muestra si no hemos completado la rutina y además fecha y hora son las correctas
+    val canCompleteNow = currentRoutine.canBeCompletedToday && isDateReached && isTimeReached
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .padding(16.dp)
     ) {
+        // Tarjeta de información de la rutina
         Card(
             colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer),
             modifier = Modifier.fillMaxWidth()
@@ -122,34 +135,42 @@ private fun RoutineDetailContent(
             }
         }
 
-        if (currentRoutine.isConcluded) {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Color(0xFF4CAF50), shape = MaterialTheme.shapes.medium)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Rutina completada!", color = Color.White, fontWeight = FontWeight.Bold)
+
+        when {
+            currentRoutine.isConcluded -> {
+                // Caso: Meta total alcanzada
+                StatusBox(Color(0xFF4CAF50), "¡Rutina Completada Totalmente!")
             }
-        } else if (showFinishButton) {
-            Button(
-                onClick = onFinishButtonClick,
-                modifier = Modifier.fillMaxWidth().height(56.dp),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                // Icono eliminado
-                Text("Finalizar rutina por hoy")
+            canCompleteNow -> {
+                // Caso: Toca hacerla ahora
+                Button(
+                    onClick = onFinishButtonClick,
+                    modifier = Modifier.fillMaxWidth().height(56.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Finalizar rutina por hoy")
+                }
             }
-        } else {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surfaceVariant, shape = MaterialTheme.shapes.medium)
-                    .padding(16.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text("Rutina completada por hoy!", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            !isDateReached -> {
+                // Caso: Aún no es el día de inicio
+                StatusBox(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    "Disponible a partir del ${currentRoutine.startDate}"
+                )
+            }
+            !isTimeReached -> {
+                // Caso: Es el día pero aún no es la hora
+                StatusBox(
+                    MaterialTheme.colorScheme.surfaceVariant,
+                    "Disponible hoy a las ${currentRoutine.startHour}"
+                )
+            }
+            else -> {
+                // Caso: Ya se completó hoy (canBeCompletedToday es false)
+                StatusBox(
+                    MaterialTheme.colorScheme.secondaryContainer,
+                    "¡Ya has cumplido por hoy!"
+                )
             }
         }
     }
@@ -157,24 +178,28 @@ private fun RoutineDetailContent(
     if (showConfirmDialog) {
         AlertDialog(
             onDismissRequest = onConfirmDialogDismiss,
-            title = { Text("Confirmar Completado") },
-            text = { Text("¿Deseas terminar por hoy?") },
+            title = { Text("Confirmar") },
+            text = { Text("¿Deseas marcar la rutina como completada por hoy?") },
             confirmButton = {
-                TextButton(
-                    onClick = {
-                        onFinishRoutineConfirm()
-                        showFinishButton = false
-                    }
-                ) {
-                    Text("Confirmar")
-                }
+                TextButton(onClick = onFinishRoutineConfirm) { Text("Confirmar") }
             },
             dismissButton = {
-                TextButton(onClick = onConfirmDialogDismiss) {
-                    Text("Cancelar")
-                }
+                TextButton(onClick = onConfirmDialogDismiss) { Text("Cancelar") }
             }
         )
+    }
+}
+
+@Composable
+fun StatusBox(backgroundColor: Color, message: String) {
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(backgroundColor, shape = MaterialTheme.shapes.medium)
+            .padding(16.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(message, fontWeight = FontWeight.Bold)
     }
 }
 
@@ -196,10 +221,7 @@ fun TaskItemReadOnly(task: TaskEntity) {
                 }
             }
             if (task.time > 0) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Spacer(modifier = Modifier.width(4.dp))
-                    Text("${task.time} min", style = MaterialTheme.typography.bodyMedium)
-                }
+                Text("${task.time} min", style = MaterialTheme.typography.bodyMedium)
             }
         }
     }
