@@ -100,8 +100,13 @@ class MainActivity : ComponentActivity() {
                         composable(
                             route = "routine_detail/{routineId}",
                             arguments = listOf(navArgument("routineId") { type = NavType.IntType })
-                        ) {
+                        ) { backStackEntry -> // Agregamos 'backStackEntry' aquí
+
+                            // Extraemos el ID de los argumentos de la navegación
+                            val routineId = backStackEntry.arguments?.getInt("routineId") ?: 0
+
                             RoutineDetailScreen(
+                                routineId = routineId, // Pasamos el ID que acabamos de extraer
                                 onNavigateBack = { navController.popBackStack() },
                                 isReadOnly = true
                             )
